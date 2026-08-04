@@ -25,11 +25,22 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "db/**/*.ts",
+    "worker/**/*.ts",
+    "build/**/*.ts",
+    "vite.config.ts",
+    "next.config.ts",
+    "drizzle.config.ts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "mobile",
+    "supabase/functions",
+    "dist",
+    ".wrangler"
+  ]
 }
