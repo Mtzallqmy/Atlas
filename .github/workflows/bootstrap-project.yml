@@ -1,0 +1,57 @@
+name: Bootstrap Anatomy Atlas source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.bootstrap/READY'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bootstrap-anatomy-atlas
+  cancel-in-progress: false
+
+jobs:
+  extract-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reassemble verified source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .bootstrap/READY
+          test -f .bootstrap/TRANSPORT_MANIFEST
+          mapfile -t chunks < <(find .bootstrap/chunks -maxdepth 1 -type f -name 'chunk-*' | sort)
+          test "${#chunks[@]}" -eq 4
+          cat "${chunks[@]}" | base64 --decode > /tmp/anatomy-atlas.tar.xz
+          read -r archive_name expected_sha < .bootstrap/TRANSPORT_MANIFEST
+          actual_sha="$(sha256sum /tmp/anatomy-atlas.tar.xz | awk '{print $1}')"
+          test "$archive_name" = "full-production-lite.tar.xz"
+          test "$actual_sha" = "$expected_sha"
+
+      - name: Extract project and replace bootstrap transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/anatomy-atlas-source
+          mkdir -p /tmp/anatomy-atlas-source
+          tar -xJf /tmp/anatomy-atlas.tar.xz -C /tmp/anatomy-atlas-source
+          rsync -a --delete --exclude='.git/' /tmp/anatomy-atlas-source/ ./
+          rm -rf .bootstrap
+
+      - name: Commit complete repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Publish complete Anatomy Atlas production source'
+          git push origin HEAD:main
