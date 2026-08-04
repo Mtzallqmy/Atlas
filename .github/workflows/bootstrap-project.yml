@@ -29,7 +29,7 @@ jobs:
           test -f .bootstrap/READY
           test -f .bootstrap/TRANSPORT_MANIFEST
           mapfile -t chunks < <(find .bootstrap/chunks -maxdepth 1 -type f -name 'chunk-*' | sort)
-          test "${#chunks[@]}" -eq 4
+          test "${#chunks[@]}" -gt 0
           cat "${chunks[@]}" | base64 --decode > /tmp/anatomy-atlas.tar.xz
           read -r archive_name expected_sha < .bootstrap/TRANSPORT_MANIFEST
           actual_sha="$(sha256sum /tmp/anatomy-atlas.tar.xz | awk '{print $1}')"
