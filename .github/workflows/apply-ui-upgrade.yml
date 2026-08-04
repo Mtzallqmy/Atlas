@@ -1,0 +1,44 @@
+name: Apply bilingual UI upgrade
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/apply-ui-upgrade.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-ui-upgrade
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply verified UI package
+        run: bash scripts/apply-ui-upgrade.sh
+      - name: Verify protected 3D files unchanged
+        run: |
+          git diff --exit-code HEAD -- app/lib/three || {
+            echo 'Three.js files must not be modified';
+            exit 1;
+          }
+      - name: Install and validate
+        run: |
+          npm config set registry https://registry.npmjs.org/
+          npm ci --no-audit --no-fund
+          npm run typecheck
+          npm run build:next
+      - name: Commit upgrade
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/components/AnatomyApp.tsx app/components/OrganViewer.tsx app/lib/i18n.ts app/layout.tsx app/bilingual.css
+          git commit -m 'Upgrade bilingual UI, accessibility, content, and responsive design'
+          git push origin HEAD:main
