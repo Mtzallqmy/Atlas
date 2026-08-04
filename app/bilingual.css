@@ -1,0 +1,57 @@
+/* Bilingual experience and non-3D interface refinements. */
+.locale-switch {
+  min-width: 82px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .42);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  transition: background .2s ease, transform .2s ease, border-color .2s ease;
+}
+.locale-switch:hover { background: rgba(255,255,255,.78); border-color: rgba(141,107,204,.35); transform: translateY(-1px); }
+.site-footer {
+  max-width: 1720px;
+  margin: 24px auto 0;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+.site-footer span { color: var(--ink); font-weight: 700; }
+.locale-ar { font-family: var(--font-arabic), var(--font-sans), sans-serif; }
+.locale-ar .brand, .locale-ar .organ-item { text-align: right; }
+.locale-ar .brand strong, .locale-ar .organ-item b, .locale-ar .info-panel h1,
+.locale-ar .learning-cards h3, .locale-ar .learning-modal h2 { font-family: var(--font-arabic), var(--font-serif), serif; }
+.locale-ar .brand em, .locale-ar .info-panel em, .locale-ar .learning-cards em,
+.locale-ar .learning-modal > em { font-family: var(--font-arabic), sans-serif; font-style: normal; }
+.locale-ar .viewer-tools { left: auto; right: 18px; }
+.locale-ar .tip-note { right: auto; left: 16px; transform: rotate(4deg); }
+.locale-ar .callout-body b, .locale-ar .callout-body small { padding-left: 0; padding-right: 13px; }
+.locale-ar .callout-body b:before { left: auto; right: 12px; }
+.locale-ar .callout-close { right: auto; left: 6px; }
+.locale-ar .organ-item svg, .locale-ar .view-all svg, .locale-ar .lesson-button svg,
+.locale-ar .learning-cards article > button svg { transform: scaleX(-1); }
+.locale-ar .key-facts dt { letter-spacing: 0; }
+.locale-ar .panel-heading > span, .locale-ar .info-kicker, .locale-ar .info-panel h2 { letter-spacing: .04em; }
+
+@media (min-width: 1181px) {
+  .topbar { grid-template-columns: minmax(270px, 1fr) auto minmax(220px, .75fr) auto auto; gap: 14px; }
+}
+@media (max-width: 1180px) {
+  .locale-switch { order: 3; }
+}
+@media (max-width: 760px) {
+  .site-footer { align-items: flex-start; flex-direction: column; padding-inline: 4px; }
+  .locale-switch { min-width: 70px; height: 36px; padding-inline: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

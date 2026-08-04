@@ -14,16 +14,18 @@ import {
 } from "lucide-react";
 import type { Hotspot, Organ } from "../lib/anatomy-data";
 import type { AnatomyViewer } from "../lib/three/viewer";
+import type { Locale } from "../lib/i18n";
 
 type Props = {
   organ: Organ;
+  locale: Locale;
   autoRotate: boolean;
   onAutoRotate: (enabled: boolean) => void;
   compare: boolean;
   onCompare: () => void;
 };
 
-export function OrganViewer({ organ, autoRotate, onAutoRotate, compare, onCompare }: Props) {
+export function OrganViewer({ organ, locale, autoRotate, onAutoRotate, compare, onCompare }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<AnatomyViewer | null>(null);
   const organRef = useRef(organ);
@@ -111,22 +113,23 @@ export function OrganViewer({ organ, autoRotate, onAutoRotate, compare, onCompar
     }
   };
 
+  const ar = locale === "ar";
   const tools = [
-    { id: "rotate", label: "Rotate", icon: RotateCcw },
-    { id: "zoom", label: "Zoom", icon: Search },
-    { id: "isolate", label: "Isolate", icon: CircleDashed },
-    { id: "section", label: "Cross-section", icon: ScanLine },
-    { id: "layers", label: "Layers", icon: Layers3 },
-    { id: "compare", label: "Compare", icon: Box },
-    { id: "reset", label: "Reset", icon: RotateCcw },
+    { id: "rotate", label: ar ? "تدوير" : "Rotate", icon: RotateCcw },
+    { id: "zoom", label: ar ? "تكبير" : "Zoom", icon: Search },
+    { id: "isolate", label: ar ? "عزل" : "Isolate", icon: CircleDashed },
+    { id: "section", label: ar ? "مقطع" : "Cross-section", icon: ScanLine },
+    { id: "layers", label: ar ? "طبقات" : "Layers", icon: Layers3 },
+    { id: "compare", label: ar ? "مقارنة" : "Compare", icon: Box },
+    { id: "reset", label: ar ? "إعادة" : "Reset", icon: RotateCcw },
   ];
 
   return (
-    <section className="viewer-shell" aria-label={`${organ.name} interactive viewer`}>
+    <section className="viewer-shell" aria-label={ar ? `عارض تفاعلي لعضو ${organ.name}` : `${organ.name} interactive viewer`}>
       <div className="viewer-glow" style={{ "--organ-accent": organ.accent } as React.CSSProperties} />
       <div ref={mountRef} className="three-mount" />
 
-      <div className="viewer-tools" aria-label="3D viewer tools">
+      <div className="viewer-tools" aria-label={ar ? "أدوات العارض ثلاثي الأبعاد" : "3D viewer tools"}>
         {tools.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -142,15 +145,15 @@ export function OrganViewer({ organ, autoRotate, onAutoRotate, compare, onCompar
         ))}
       </div>
 
-      <aside className="tip-note" aria-label="Viewer instructions">
-        <span><Sparkles size={15} /> Tip</span>
-        <p>Drag to rotate<br />Scroll to zoom<br />Click a dot to learn more</p>
+      <aside className="tip-note" aria-label={ar ? "إرشادات استخدام العارض" : "Viewer instructions"}>
+        <span><Sparkles size={15} /> {ar ? "إرشاد" : "Tip"}</span>
+        <p>{ar ? <>اسحب للتدوير<br />مرّر للتكبير<br />اضغط نقطة لمعرفة المزيد</> : <>Drag to rotate<br />Scroll to zoom<br />Click a dot to learn more</>}</p>
       </aside>
 
       {selected && (
         <div className="hotspot-callout" ref={calloutRef} data-side="right">
           <div className="callout-body" style={{ "--hotspot-color": selected.color } as React.CSSProperties}>
-            <button className="callout-close" type="button" onClick={() => viewerRef.current?.clearSelection()} aria-label="Close">
+            <button className="callout-close" type="button" onClick={() => viewerRef.current?.clearSelection()} aria-label={ar ? "إغلاق" : "Close"}>
               <X size={13} />
             </button>
             <b>{selected.label}</b>
@@ -169,18 +172,18 @@ export function OrganViewer({ organ, autoRotate, onAutoRotate, compare, onCompar
       {loading && slowLoad && (
         <div className="model-loader" role="status" aria-live="polite">
           <div className="loader-orbit"><Maximize2 size={20} /></div>
-          <strong>Preparing the {organ.name.toLowerCase()}</strong>
+          <strong>{ar ? `جارٍ تجهيز ${organ.name}` : `Preparing the ${organ.name.toLowerCase()}`}</strong>
           <span>{Math.max(8, Math.round(progress * 100))}%</span>
         </div>
       )}
 
       <button className="auto-rotate" type="button" onClick={() => onAutoRotate(!autoRotate)} aria-pressed={autoRotate}>
-        <RotateCcw size={14} /> Auto rotate
+        <RotateCcw size={14} /> {ar ? "تدوير تلقائي" : "Auto rotate"}
         <span className={`switch ${autoRotate ? "on" : ""}`}><i /></span>
       </button>
 
       <div className="view-caption">
-        <span>3D specimen · click a dot to explore</span>
+        <span>{ar ? "نموذج ثلاثي الأبعاد · اضغط نقطة للاستكشاف" : "3D specimen · click a dot to explore"}</span>
         <strong>{organ.scientificName}</strong>
       </div>
     </section>

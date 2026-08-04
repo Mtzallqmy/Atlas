@@ -1,10 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans, Noto_Sans_Arabic } from "next/font/google";
 import "./globals.css";
+import "./bilingual.css";
 
 const sans = DM_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+});
+
+const arabic = Noto_Sans_Arabic({
+  variable: "--font-arabic",
+  subsets: ["arabic"],
+  display: "swap",
 });
 
 const serif = Cormorant_Garamond({
@@ -34,11 +41,13 @@ const siteUrl =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Anatomy Atelier — Learn anatomy like an artist",
+  title: { default: "Anatomy Atelier — Learn anatomy like an artist", template: "%s | Anatomy Atelier" },
   description:
     "Explore medically detailed 3D organs — heart, brain, lungs, liver, kidneys, eye, intestine, pancreas, and skin — through an elegant, interactive anatomy atelier.",
   applicationName: "Anatomy Atelier",
-  keywords: ["anatomy", "3D anatomy", "human body", "medical education", "interactive learning", "organs"],
+  keywords: ["anatomy", "3D anatomy", "human body", "medical education", "interactive learning", "organs", "تشريح", "أطلس تشريحي", "تعليم طبي"],
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -51,13 +60,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Anatomy Atelier",
-    title: "Anatomy Atelier — Learn anatomy like an artist",
+    title: { default: "Anatomy Atelier — Learn anatomy like an artist", template: "%s | Anatomy Atelier" },
     description: "Learn anatomy like an artist through immersive, medically detailed 3D specimens.",
     images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Anatomy Atelier — Learn anatomy like an artist",
+    title: { default: "Anatomy Atelier — Learn anatomy like an artist", template: "%s | Anatomy Atelier" },
     description: "Learn anatomy like an artist through immersive, medically detailed 3D specimens.",
     images: [OG_IMAGE],
   },
@@ -75,7 +84,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${sans.variable} ${serif.variable}`}
+        className={`${sans.variable} ${serif.variable} ${arabic.variable}`}
       >
         {children}
       </body>
