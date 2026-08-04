@@ -24,7 +24,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Reassemble transport archives
+      - name: Reassemble verified transport bundle
         shell: bash
         run: |
           set -euo pipefail
@@ -38,18 +38,16 @@ jobs:
             test "$actual_sha" = "$expected_sha" || { echo "Checksum mismatch for $archive" >&2; exit 1; }
           done < .bootstrap/TRANSPORT_MANIFEST
 
-      - name: Extract production source and assets
+      - name: Extract complete production monorepo
         shell: bash
         run: |
           set -euo pipefail
-          if test -f .bootstrap/source.tar.xz; then
-            tar -xJf .bootstrap/source.tar.xz
+          if test -f .bootstrap/full-production-lite.tar.xz; then
+            tar -xJf .bootstrap/full-production-lite.tar.xz
           else
-            tar -xzf .bootstrap/source.tar.gz
+            if test -f .bootstrap/source.tar.xz; then tar -xJf .bootstrap/source.tar.xz; else tar -xzf .bootstrap/source.tar.gz; fi
+            for archive in heart brain lungs liver kidneys eyeball intestine pancreas skin shared; do tar -xzf ".bootstrap/${archive}.tar.gz"; done
           fi
-          for archive in heart brain lungs liver kidneys eyeball intestine pancreas skin shared; do
-            tar -xzf ".bootstrap/${archive}.tar.gz"
-          done
           mkdir -p mobile/assets/models mobile/assets/anatomy mobile/assets/images
           cp public/models/*.glb mobile/assets/models/
           cp -R public/anatomy/. mobile/assets/anatomy/
@@ -63,7 +61,7 @@ jobs:
           test -f package.json
           test -f mobile/pubspec.yaml
           test -f supabase/config.toml
-          test -f public/models/heart.glb
+          test -f public/models/manifest.json
           test "$(find public/models -maxdepth 1 -name '*.glb' | wc -l)" -eq 9
           test "$(find public/anatomy -name '*.webp' | wc -l)" -eq 45
           test "$(find mobile/assets/models -maxdepth 1 -name '*.glb' | wc -l)" -eq 9
