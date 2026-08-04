@@ -2,38 +2,29 @@ import { NextResponse } from "next/server";
 
 export const revalidate = 300;
 
-type LessonRow = {
-  id: string;
-  slug: string;
-  difficulty: string | null;
-  estimated_minutes: number | null;
-  summary: string | null;
-  organ_id: string | null;
-};
+const DEFAULT_SUPABASE_URL = "https://jiczgqgukspkklvttwdo.supabase.co";
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_SYMVGQqiq7Mx09Fz-hokNw_cy9lAGcf";
 
-type OrganRow = {
-  id: string;
-  slug: string;
-  definition: string | null;
-  function_summary: string | null;
-  location_summary: string | null;
-};
+type LessonRow = { id: string; slug: string; difficulty: string | null; estimated_minutes: number | null; summary: string | null; organ_id: string | null };
+type OrganRow = { id: string; slug: string; definition: string | null; function_summary: string | null; location_summary: string | null };
 
 function configuration() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return null;
-  return { url, key };
+  return {
+    url: (process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, ""),
+    key: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY,
+  };
 }
 
 async function supabaseGet<T>(path: string): Promise<T> {
   const config = configuration();
-  if (!config) throw new Error("Supabase public configuration is unavailable.");
   const response = await fetch(`${config.url}/rest/v1/${path}`, {
     headers: { apikey: config.key, Authorization: `Bearer ${config.key}` },
     next: { revalidate: 300 },
   });
-  if (!response.ok) throw new Error(`Supabase request failed (${response.status}).`);
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Supabase request failed (${response.status}): ${detail.slice(0, 240)}`);
+  }
   return response.json() as Promise<T>;
 }
 
@@ -55,7 +46,7 @@ export async function GET() {
     const questionCount = new Map<string, number>();
     questions.forEach((question) => questionCount.set(question.quiz_id, (questionCount.get(question.quiz_id) ?? 0) + 1));
 
-    const payload = lessons.map((lesson) => {
+    const data = lessons.map((lesson) => {
       const organ = lesson.organ_id ? organById.get(lesson.organ_id) : undefined;
       const quizId = quizByLesson.get(lesson.id);
       return {
@@ -73,14 +64,8 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      data: payload,
-      meta: {
-        lessons: payload.length,
-        sections: sections.length,
-        quizzes: quizzes.length,
-        questions: questions.length,
-        generatedInMs: Date.now() - startedAt,
-      },
+      data,
+      meta: { lessons: data.length, sections: sections.length, quizzes: quizzes.length, questions: questions.length, generatedInMs: Date.now() - startedAt },
     }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected learning API error.";
