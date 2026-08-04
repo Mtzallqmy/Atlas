@@ -11,7 +11,6 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["@cloudflare/workers-types"],
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
@@ -27,20 +26,19 @@
     "next-env.d.ts",
     "app/**/*.ts",
     "app/**/*.tsx",
-    "db/**/*.ts",
-    "worker/**/*.ts",
-    "build/**/*.ts",
-    "vite.config.ts",
     "next.config.ts",
-    "drizzle.config.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "mobile",
-    "supabase/functions",
+    "supabase",
+    "worker",
+    "build",
     "dist",
-    ".wrangler"
+    ".wrangler",
+    "vite.config.ts",
+    "drizzle.config.ts"
   ]
 }
