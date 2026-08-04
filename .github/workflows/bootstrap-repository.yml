@@ -17,21 +17,38 @@ concurrency:
 
 jobs:
   extract-and-verify:
-    if: ${{ hashFiles('.bootstrap/*.tar.gz') != '' }}
+    if: ${{ hashFiles('.bootstrap/READY') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Verify transport archives
-        run: sha256sum --check .bootstrap/SHA256SUMS
+      - name: Reassemble transport archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s .bootstrap/TRANSPORT_MANIFEST
+          while IFS=$'\t' read -r archive expected_sha; do
+            test -n "$archive"
+            mapfile -t parts < <(find .bootstrap -maxdepth 1 -type f -name "${archive}.b64.*" | sort -V)
+            test "${#parts[@]}" -gt 0 || { echo "Missing chunks for $archive" >&2; exit 1; }
+            cat "${parts[@]}" | tr -d '\r\n' | base64 --decode > ".bootstrap/$archive"
+            actual_sha="$(sha256sum ".bootstrap/$archive" | awk '{print $1}')"
+            test "$actual_sha" = "$expected_sha" || { echo "Checksum mismatch for $archive" >&2; exit 1; }
+          done < .bootstrap/TRANSPORT_MANIFEST
 
       - name: Extract production source and assets
+        shell: bash
         run: |
-          tar -xzf .bootstrap/source.tar.gz
-          for archive in .bootstrap/heart.tar.gz .bootstrap/brain.tar.gz .bootstrap/lungs.tar.gz .bootstrap/liver.tar.gz .bootstrap/kidneys.tar.gz .bootstrap/eyeball.tar.gz .bootstrap/intestine.tar.gz .bootstrap/pancreas.tar.gz .bootstrap/skin.tar.gz .bootstrap/shared.tar.gz; do
-            tar -xzf "$archive"
+          set -euo pipefail
+          if test -f .bootstrap/source.tar.xz; then
+            tar -xJf .bootstrap/source.tar.xz
+          else
+            tar -xzf .bootstrap/source.tar.gz
+          fi
+          for archive in heart brain lungs liver kidneys eyeball intestine pancreas skin shared; do
+            tar -xzf ".bootstrap/${archive}.tar.gz"
           done
           mkdir -p mobile/assets/models mobile/assets/anatomy mobile/assets/images
           cp public/models/*.glb mobile/assets/models/
@@ -40,17 +57,24 @@ jobs:
           rm -rf .bootstrap
 
       - name: Verify extracted project
+        shell: bash
         run: |
+          set -euo pipefail
           test -f package.json
           test -f mobile/pubspec.yaml
           test -f supabase/config.toml
           test -f public/models/heart.glb
           test "$(find public/models -maxdepth 1 -name '*.glb' | wc -l)" -eq 9
           test "$(find public/anatomy -name '*.webp' | wc -l)" -eq 45
+          test "$(find mobile/assets/models -maxdepth 1 -name '*.glb' | wc -l)" -eq 9
+          test "$(find mobile/assets/anatomy -name '*.webp' | wc -l)" -eq 45
           grep -q 'تطوير وبرمجة: معتز العلقمي' README.md
+          node --test tests/project-structure.test.mjs
 
       - name: Commit complete repository
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'Anatomy Atlas Automation'
           git config user.email 'actions@users.noreply.github.com'
           git add -A
