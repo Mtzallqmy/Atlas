@@ -33,16 +33,17 @@ jobs:
           cat "${chunks[@]}" | base64 --decode > /tmp/anatomy-atlas.tar.xz
           read -r archive_name expected_sha < .bootstrap/TRANSPORT_MANIFEST
           actual_sha="$(sha256sum /tmp/anatomy-atlas.tar.xz | awk '{print $1}')"
-          test "$archive_name" = "full-production-lite.tar.xz"
+          test "$archive_name" = "anatomy-atlas-release.tar.xz"
           test "$actual_sha" = "$expected_sha"
 
-      - name: Extract project and replace bootstrap transport
+      - name: Extract project and restore shared mobile assets
         shell: bash
         run: |
           set -euo pipefail
           rm -rf /tmp/anatomy-atlas-source
           mkdir -p /tmp/anatomy-atlas-source
           tar -xJf /tmp/anatomy-atlas.tar.xz -C /tmp/anatomy-atlas-source
+          bash /tmp/anatomy-atlas-source/scripts/restore-mobile-assets.sh
           rsync -a --delete --exclude='.git/' /tmp/anatomy-atlas-source/ ./
           rm -rf .bootstrap
 
