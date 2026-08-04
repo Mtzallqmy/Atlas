@@ -31,9 +31,21 @@ jobs:
           test -s .bootstrap/TRANSPORT_MANIFEST
           while IFS=$'\t' read -r archive expected_sha; do
             test -n "$archive"
-            mapfile -t parts < <(find .bootstrap -maxdepth 1 -type f -name "${archive}.b64.*" | sort -V)
-            test "${#parts[@]}" -gt 0 || { echo "Missing chunks for $archive" >&2; exit 1; }
-            cat "${parts[@]}" | tr -d '\r\n' | base64 --decode > ".bootstrap/$archive"
+            encoded=".bootstrap/${archive}.b64"
+            : > "$encoded"
+            if test -s .bootstrap/REMOTE_CHUNKS; then
+              expected_index=0
+              while IFS=$'\t' read -r index url; do
+                test "$index" = "$(printf '%03d' "$expected_index")" || { echo "Remote chunk order error at $index" >&2; exit 1; }
+                curl --fail --location --retry 4 --silent --show-error "$url" >> "$encoded"
+                expected_index=$((expected_index + 1))
+              done < .bootstrap/REMOTE_CHUNKS
+            else
+              mapfile -t parts < <(find .bootstrap -maxdepth 1 -type f -name "${archive}.b64.*" | sort -V)
+              test "${#parts[@]}" -gt 0 || { echo "Missing chunks for $archive" >&2; exit 1; }
+              cat "${parts[@]}" >> "$encoded"
+            fi
+            tr -d '\r\n' < "$encoded" | base64 --decode > ".bootstrap/$archive"
             actual_sha="$(sha256sum ".bootstrap/$archive" | awk '{print $1}')"
             test "$actual_sha" = "$expected_sha" || { echo "Checksum mismatch for $archive" >&2; exit 1; }
           done < .bootstrap/TRANSPORT_MANIFEST
