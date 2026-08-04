@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Applies only the public learning layout; Three.js sources remain untouched.
 python3 - <<'PY'
 from pathlib import Path
 p=Path('app/components/AnatomyApp.tsx')
