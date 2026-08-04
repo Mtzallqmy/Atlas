@@ -1,0 +1,38 @@
+{
+  "manifestVersion": 1,
+  "locale": ["ar", "en"],
+  "systems": [
+    {"id":"cardiovascular","nameAr":"الجهاز القلبي الوعائي","nameEn":"Cardiovascular system","icon":"favorite"},
+    {"id":"nervous","nameAr":"الجهاز العصبي","nameEn":"Nervous system","icon":"neurology"},
+    {"id":"respiratory","nameAr":"الجهاز التنفسي","nameEn":"Respiratory system","icon":"air"},
+    {"id":"skeletal","nameAr":"الجهاز الهيكلي","nameEn":"Skeletal system","icon":"accessibility_new"}
+  ],
+  "organs": [
+    {
+      "id":"heart",
+      "systemId":"cardiovascular",
+      "slug":"heart",
+      "nameAr":"القلب",
+      "nameEn":"Heart",
+      "latinName":"Cor",
+      "summaryAr":"مضخة عضلية تحافظ على دوران الدم عبر الدورتين الرئوية والجهازية.",
+      "summaryEn":"A muscular pump that maintains circulation through pulmonary and systemic circuits.",
+      "functionAr":"ضخ الدم المؤكسج إلى الأنسجة وإرسال الدم غير المؤكسج إلى الرئتين.",
+      "functionEn":"Pumps oxygenated blood to tissues and directs deoxygenated blood to the lungs.",
+      "locationAr":"في المنصف الأوسط خلف القص وبين الرئتين.",
+      "locationEn":"In the middle mediastinum, behind the sternum and between the lungs.",
+      "bloodSupplyAr":"الشريانان التاجيان الأيمن والأيسر.",
+      "bloodSupplyEn":"Right and left coronary arteries.",
+      "innervationAr":"الضفيرة القلبية من الودي ونظير الودي عبر العصب المبهم.",
+      "innervationEn":"Cardiac plexus via sympathetic fibers and parasympathetic vagal fibers.",
+      "clinicalAr":"ترتبط بنية الشرايين التاجية والتوصيل الكهربائي مباشرة بمرض الشريان التاجي واضطرابات النظم.",
+      "clinicalEn":"Coronary anatomy and electrical conduction are directly relevant to coronary artery disease and arrhythmias.",
+      "modelAsset":"assets/models/heart.glb",
+      "fallbackAsset":"assets/images/heart.webp"
+    }
+  ],
+  "references": [
+    {"id":"gray-42","title":"Gray's Anatomy: The Anatomical Basis of Clinical Practice","edition":"42","year":2020,"locator":"Thorax: Heart"},
+    {"id":"ta2","title":"Terminologia Anatomica, Second Edition","organization":"FIPAT","year":2019,"locator":"Cardiovascular system"}
+  ]
+}
