@@ -1,0 +1,58 @@
+name: Bootstrap Anatomy Atlas repository
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.bootstrap/**'
+      - '.github/workflows/bootstrap-repository.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: anatomy-atlas-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  extract-and-verify:
+    if: ${{ hashFiles('.bootstrap/*.tar.gz') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify transport archives
+        run: sha256sum --check .bootstrap/SHA256SUMS
+
+      - name: Extract production source and assets
+        run: |
+          tar -xzf .bootstrap/source.tar.gz
+          for archive in .bootstrap/heart.tar.gz .bootstrap/brain.tar.gz .bootstrap/lungs.tar.gz .bootstrap/liver.tar.gz .bootstrap/kidneys.tar.gz .bootstrap/eyeball.tar.gz .bootstrap/intestine.tar.gz .bootstrap/pancreas.tar.gz .bootstrap/skin.tar.gz .bootstrap/shared.tar.gz; do
+            tar -xzf "$archive"
+          done
+          mkdir -p mobile/assets/models mobile/assets/anatomy mobile/assets/images
+          cp public/models/*.glb mobile/assets/models/
+          cp -R public/anatomy/. mobile/assets/anatomy/
+          cp public/anatomy/heart/organ.webp mobile/assets/images/heart.webp
+          rm -rf .bootstrap
+
+      - name: Verify extracted project
+        run: |
+          test -f package.json
+          test -f mobile/pubspec.yaml
+          test -f supabase/config.toml
+          test -f public/models/heart.glb
+          test "$(find public/models -maxdepth 1 -name '*.glb' | wc -l)" -eq 9
+          test "$(find public/anatomy -name '*.webp' | wc -l)" -eq 45
+          grep -q 'تطوير وبرمجة: معتز العلقمي' README.md
+
+      - name: Commit complete repository
+        run: |
+          git config user.name 'Anatomy Atlas Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m 'Publish complete production Anatomy Atlas monorepo'
+          git push origin HEAD:main
