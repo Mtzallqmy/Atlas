@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { OrganViewer } from "./OrganViewer";
+import { LearningHub } from "./LearningHub";
 import { organById, organs, type Organ, type OrganId } from "../lib/anatomy-data";
 import { localizeOrgan, ui, type Locale } from "../lib/i18n";
 
@@ -287,6 +288,8 @@ export function AnatomyApp() {
 
       {modal && <LearningModal type={modal} organ={organ} locale={locale} onClose={() => setModal(null)} />}
       {mobileLibrary && <button className="drawer-backdrop" aria-label={copy.closeLibrary} onClick={() => setMobileLibrary(false)} />}
+      <LearningHub locale={locale} activeOrgan={organId} />
+
       <footer className="site-footer"><span>{copy.footer}</span><small>© {new Date().getFullYear()} Anatomy Atelier</small></footer>
     </main>
   );
