@@ -1,0 +1,41 @@
+name: Apply learning hub
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/apply-learning-hub.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-learning-hub
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply UI integration
+        run: bash scripts/apply-learning-hub.sh
+      - name: Protect Three.js implementation
+        run: git diff --exit-code HEAD -- app/lib/three
+      - name: Validate production build
+        run: |
+          npm config set registry https://registry.npmjs.org/
+          npm install --no-audit --no-fund
+          npm run typecheck
+          npm run build:next
+      - name: Commit integration
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/components/AnatomyApp.tsx
+          git commit -m 'Integrate Supabase learning hub into public experience'
+          git push origin HEAD:main
